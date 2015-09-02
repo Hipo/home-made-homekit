@@ -104,16 +104,16 @@
      floor1_off
      */
     
-    _recognizedCommands =                @{
-                                           ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
-                                                                   @{ OneOfTheseWillBeSaidOnce : @[
-                                                                              @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
-                                                                              @{ ThisWillBeSaidOnce : @[
-                                                                                         @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
-                                                                                         @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
-                                                                                 } ]
-                                                                      } ]
-                                           };
+    _recognizedCommands =   @{
+                              ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
+                                                      @{ OneOfTheseWillBeSaidOnce : @[
+                                                                 @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
+                                                                 @{ ThisWillBeSaidOnce : @[
+                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
+                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
+                                                                    } ]
+                                                         } ]
+                              };
     
     [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
         
