@@ -434,6 +434,7 @@
 				EC117BFB1B81EBBD00B9C398 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
