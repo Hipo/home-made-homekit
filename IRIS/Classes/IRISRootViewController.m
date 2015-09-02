@@ -83,7 +83,7 @@
      @{ OneOfTheseWillBeSaidOnce : @[
      @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
      @{ ThisWillBeSaidOnce : @[
-     @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
+     @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHTS ON AT", @"TURN LIGHTS OFF AT"] },
      @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
      } ]
      } ]
@@ -109,7 +109,7 @@
                                                       @{ OneOfTheseWillBeSaidOnce : @[
                                                                  @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
                                                                  @{ ThisWillBeSaidOnce : @[
-                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
+                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHTS ON AT", @"TURN LIGHTS OFF AT"] },
                                                                             @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
                                                                     } ]
                                                          } ]
@@ -179,7 +179,7 @@
     
     _recognizableText = [[UILabel alloc] initForAutoLayout];
     [_recognizableText setNumberOfLines:0];
-    [_recognizableText setText:@"LIGHTS COMMANDS:\n\t1) HEY IRIS\n\t2.1)TURN ON/OFF ALL LIGHTS\n\t2.2)TURN LIGHT ON/OFF AT FIRST/SECOND FLOOR"];
+    [_recognizableText setText:@"LIGHTS COMMANDS:\n\t1) HEY IRIS\n\t2.1)TURN ON/OFF ALL LIGHTS\n\t2.2)TURN LIGHTS ON/OFF AT FIRST/SECOND FLOOR"];
     [_recognizableText setTextAlignment:NSTextAlignmentLeft];
     [self.view addSubview:_recognizableText];
     
@@ -255,13 +255,13 @@
             if ([_floorNumberString isEqualToString:@"all"]) {
                 [_fliteController say:[NSString stringWithFormat:@"Turning on %@ lights", _floorNumberString] withVoice:_slt];
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning light on at %@ floor", _floorNumberString] withVoice:_slt];
+                [_fliteController say:[NSString stringWithFormat:@"Turning lights on at %@ floor", _floorNumberString] withVoice:_slt];
             }
         } else {
             if ([_floorNumberString isEqualToString:@"all"]) {
                 [_fliteController say:[NSString stringWithFormat:@"Turning off %@ lights", _floorNumberString] withVoice:_slt];
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning light off at %@ floor", _floorNumberString] withVoice:_slt];
+                [_fliteController say:[NSString stringWithFormat:@"Turning lights off at %@ floor", _floorNumberString] withVoice:_slt];
             }
         }
         
