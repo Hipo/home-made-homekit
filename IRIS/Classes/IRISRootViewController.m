@@ -69,7 +69,7 @@
     /*
      @{
      ThisWillBeSaidOnce : @[ // Lights
-     @{ OneOfTheseWillBeSaidOnce : @[@"HELLO IRIS", @"HEY IRIS"] },
+     @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
      @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON LIGHTS", @"TURN OFF LIGHTS"] },
      @{ OneOfTheseWillBeSaidOnce : @[@"FLOOR ONE", @"FLOOR TWO", @"FLOOR THREE"] },
      @{ ThisCanBeSaidOnce : @[@"THANK YOU"] }
@@ -79,17 +79,15 @@
     
     /*
      @{
-     @{
-     ThisWillBeSaidOnce : @[
-     @{ OneOfTheseWillBeSaidOnce : @[@"HELLO IRIS", @"HEY IRIS"] },
+     ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
      @{ OneOfTheseWillBeSaidOnce : @[
-     @{ ThisWillBeSaidOnce : @[ @"OPEN DOOR"] },
+     @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
      @{ ThisWillBeSaidOnce : @[
-     @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON LIGHTS", @"TURN OFF LIGHTS"] },
-     @{ OneOfTheseWillBeSaidOnce : @[@"FLOOR ONE", @"FLOOR TWO", @"FLOOR THREE", @"FLOOR FOUR"] }
-     ] }
-     ] }
-     ] };
+     @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
+     @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
+     } ]
+     } ]
+     };
      */
     
     
@@ -106,13 +104,16 @@
      floor1_off
      */
     
-    _recognizedCommands =      @{
-                                 ThisWillBeSaidOnce : @[ // Lights
-                                         @{ OneOfTheseWillBeSaidOnce : @[@"HELLO IRIS", @"HEY IRIS"] },
-                                         @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON LIGHTS", @"TURN OFF LIGHTS"] },
-                                         @{ OneOfTheseWillBeSaidOnce : @[@"FLOOR ONE", @"FLOOR TWO", @"FLOOR THREE", @"ALL"] }
-                                         ]
-                                 };
+    _recognizedCommands =                @{
+                                           ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
+                                                                   @{ OneOfTheseWillBeSaidOnce : @[
+                                                                              @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
+                                                                              @{ ThisWillBeSaidOnce : @[
+                                                                                         @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHT ON AT", @"TURN LIGHT OFF AT"] },
+                                                                                         @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
+                                                                                 } ]
+                                                                      } ]
+                                           };
     
     [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
         
@@ -178,7 +179,7 @@
     
     _recognizableText = [[UILabel alloc] initForAutoLayout];
     [_recognizableText setNumberOfLines:0];
-    [_recognizableText setText:@" 1) LIGHTS COMMANDS: \n 1.1) HELLO/HEY IRIS \n 1.2) TURN ON/OFF LIGHTS \n 1.3) FLOOR ONE/TWO/THREE/FOUR/ALL"];
+    [_recognizableText setText:@"LIGHTS COMMANDS:\n\t1) HEY IRIS\n\t2.1)TURN ON/OFF ALL LIGHTS\n\t2.2)TURN LIGHT ON/OFF AT FIRST/SECOND FLOOR"];
     [_recognizableText setTextAlignment:NSTextAlignmentLeft];
     [self.view addSubview:_recognizableText];
     
@@ -188,11 +189,13 @@
     [_recognizableText autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_recognizedText withOffset:30.0];
 }
 
+#pragma mark - String to MD5 Converter
+
 - (NSString *)md5:(NSString*)_password {
     const char *cStr = [_password UTF8String];
     unsigned char result[16];
     CC_MD5(cStr, (CC_LONG)strlen(cStr), result); // This is the md5 call
-
+    
     return [NSString stringWithFormat:
             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
             result[0], result[1], result[2], result[3],
@@ -201,6 +204,8 @@
             result[12], result[13], result[14], result[15]
             ];
 }
+
+#pragma mark - Request Method
 
 - (void)sendRequest: (NSString *)event {
     NSString *app_id = [NSString stringWithFormat:@"%d", 135431];
@@ -247,16 +252,16 @@
     [_requestOperationManager POST:postURL parameters:parameters success:^(AFHTTPRequestOperation *operation, id respondObject) {
         NSLog(@"success!");
         if ([_on_off isEqualToString:@"on"]) {
-            if ([_floorNumberString isEqualToString:@"ALL"]) {
+            if ([_floorNumberString isEqualToString:@"all"]) {
                 [_fliteController say:[NSString stringWithFormat:@"Turning on %@ lights", _floorNumberString] withVoice:_slt];
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning on light floor %@", _floorNumberString] withVoice:_slt];
+                [_fliteController say:[NSString stringWithFormat:@"Turning light on at %@ floor", _floorNumberString] withVoice:_slt];
             }
         } else {
-            if ([_floorNumberString isEqualToString:@"ALL"]) {
+            if ([_floorNumberString isEqualToString:@"all"]) {
                 [_fliteController say:[NSString stringWithFormat:@"Turning off %@ lights", _floorNumberString] withVoice:_slt];
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning off light floor %@", _floorNumberString] withVoice:_slt];
+                [_fliteController say:[NSString stringWithFormat:@"Turning light off at %@ floor", _floorNumberString] withVoice:_slt];
             }
         }
         
@@ -292,32 +297,55 @@
     NSLog(@"The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID);
     
     NSArray *commandWords = [hypothesis componentsSeparatedByString: @" "];
-    _on_off = commandWords[3];
-    _on_off = [_on_off lowercaseString];
-    
-    _floorNumberString = commandWords[commandWords.count-1];
-    NSInteger floorNumber = 0;
     
     NSString *event = nil;
     
-    if ([_floorNumberString isEqualToString:@"ONE"]) {
-        floorNumber = 1;
-        event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
-    } else if ([_floorNumberString isEqualToString:@"TWO"]){
-        floorNumber = 2;
-        event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
-    } else if ([_floorNumberString isEqualToString:@"THREE"]){
-        floorNumber = 3;
-        event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
-    } else if ([_floorNumberString isEqualToString:@"FOUR"]){
-        floorNumber = 4;
-        event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
-    } else {
-        event = [NSString stringWithFormat:@"%@_%@",[_floorNumberString lowercaseString],_on_off];
+    switch (commandWords.count) {
+        case 6: {
+            _on_off = commandWords[3];
+            _on_off = [_on_off lowercaseString];
+            
+            _floorNumberString = @"all";
+            
+            event = [NSString stringWithFormat:@"%@_%@",[_floorNumberString lowercaseString],_on_off];
+            break;
+        }
+        case 8:
+            _on_off = commandWords[4];
+            _on_off = [_on_off lowercaseString];
+            
+            _floorNumberString = commandWords[commandWords.count - 2];
+            NSInteger floorNumber = 0;
+            
+            
+            if ([_floorNumberString isEqualToString:@"FIRST"]) {
+                floorNumber = 1;
+                event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
+                
+            } else if ([_floorNumberString isEqualToString:@"SECOND"]) {
+                floorNumber = 2;
+                event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
+                
+            } else if ([_floorNumberString isEqualToString:@"THIRD"]) {
+                floorNumber = 3;
+                event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
+                
+            } else if ([_floorNumberString isEqualToString:@"FOURTH"]) {
+                floorNumber = 4;
+                event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
+                
+            }
+            break;
+        default:
+            break;
     }
-    [self sendRequest:event];
     
-    [_recognizedText setText:hypothesis];
+    if (![_on_off isEqualToString:@""] && ![_floorNumberString isEqualToString:@""]) {
+        [self sendRequest:event];
+        [_recognizedText setText:hypothesis];
+    } else {
+        [_recognizedText setText:[NSString stringWithFormat:@"Can't send request to the arduino!\n%@",hypothesis]];
+    }
 }
 
 - (void)pocketsphinxDidReceiveNBestHypothesisArray:(NSArray *)hypothesisArray {
