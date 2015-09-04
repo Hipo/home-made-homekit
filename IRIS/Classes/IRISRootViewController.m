@@ -41,6 +41,7 @@
 @property (nonatomic, strong) UIButton *stateButton;
 @property (nonatomic, strong) UIView *popUpView;
 @property (nonatomic, strong) UILabel *popUpLabel;
+@property (nonatomic, strong) NSLayoutConstraint *popUpConstraint;
 
 @property (nonatomic, strong) OELanguageModelGenerator *languageModelGenerator;
 @property (nonatomic, strong) OEFliteController *fliteController;
@@ -75,18 +76,7 @@
     [_openEarsEventsObserver setDelegate:self];
     
     _languageModelGenerator = [[OELanguageModelGenerator alloc] init];
-    
-    /*
-     @{
-     ThisWillBeSaidOnce : @[ // Lights
-     @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
-     @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON LIGHTS", @"TURN OFF LIGHTS"] },
-     @{ OneOfTheseWillBeSaidOnce : @[@"FLOOR ONE", @"FLOOR TWO", @"FLOOR THREE"] },
-     @{ ThisCanBeSaidOnce : @[@"THANK YOU"] }
-     ]
-     };
-     */
-    
+
     /*
      @{
      ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
@@ -159,12 +149,12 @@
                 [_secondCommandLabel setTextColor:[UIColor colorWithRed:5.0/255.0 green:5.0/255.0 blue:5.0/255.0 alpha:1.0]];
                 
             } else {
-                NSLog(@"Error: %@", [error localizedDescription]);            }
+                NSLog(@"Error: %@", [error localizedDescription]);
+            }
         } else {
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"IMPORTANT!" message:@"Please open the microphone permisson in the settings." delegate:nil cancelButtonTitle:@"OKAY" otherButtonTitles:nil, nil];
             [alertView show];
         }
-        
     }];
 }
 
@@ -330,8 +320,9 @@
     
     [_popUpView autoSetDimensionsToSize:CGSizeMake(mainFrame.size.width, 78)];
     [_popUpView autoAlignAxis:ALAxisVertical toSameAxisOfView:_irisContentView];
-    [_popUpView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.view];
+    _popUpConstraint = [_popUpView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.view];
     
+    [self.view bringSubviewToFront:_popUpView];
     
     _popUpLabel = [[UILabel alloc] initForAutoLayout];
     [_popUpLabel sizeToFit];
@@ -339,6 +330,31 @@
     
     [_popUpLabel autoAlignAxisToSuperviewAxis:ALAxisHorizontal];
     [_popUpLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
+}
+
+#pragma mark - Popup Information
+
+- (void)popUpwithInformation:(NSString *)information {
+    NSAttributedString *informationAttributedString = [[NSAttributedString alloc] initWithString:information
+                                                                                      attributes:@{
+                                                                                                   NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                                                                                   NSForegroundColorAttributeName: [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0]
+                                                                                                   }];
+    
+    [_popUpLabel setAttributedText:informationAttributedString];
+    [_popUpLabel sizeToFit];
+    [_popUpView layoutIfNeeded];
+    
+    [UIView animateWithDuration:0.5 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        _popUpConstraint.constant = -78.f;
+        [_popUpView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.5 delay:1.5 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            _popUpConstraint.constant = 0.f;
+            [_popUpView layoutIfNeeded];
+        } completion:nil];
+    }];
+    
 }
 
 #pragma mark - String to MD5 Converter
@@ -402,30 +418,31 @@
     [_requestOperationManager.responseSerializer setAcceptableContentTypes:[NSSet setWithObject:@"text/html"]];
     
     [_requestOperationManager POST:postURL parameters:parameters success:^(AFHTTPRequestOperation *operation, id respondObject) {
-        NSLog(@"success!");
+        NSLog(@"Success!");
         if ([_on_off isEqualToString:@"on"]) {
             if ([_floorNumberString isEqualToString:@"all"]) {
-                [_fliteController say:[NSString stringWithFormat:@"Turning on %@ lights", _floorNumberString] withVoice:_slt];
+                [self popUpwithInformation:@"All lights are on"];
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning lights on at %@ floor", _floorNumberString] withVoice:_slt];
+                [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are on", [_floorNumberString capitalizedString]]];
             }
         } else {
             if ([_floorNumberString isEqualToString:@"all"]) {
-                [_fliteController say:[NSString stringWithFormat:@"Turning off %@ lights", _floorNumberString] withVoice:_slt];
+                [self popUpwithInformation:@"All lights are off"];
+
             } else {
-                [_fliteController say:[NSString stringWithFormat:@"Turning lights off at %@ floor", _floorNumberString] withVoice:_slt];
+                [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are off", [_floorNumberString capitalizedString]]];
             }
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
+        [self popUpwithInformation:@"Network Error"];
     }];
 }
 
 #pragma mark - Button Actions
 
 - (void)didTapListenButton:(UIButton *)button {
-    
     if ([_stateButton.titleLabel.text isEqualToString:@"Listen"]) {
         [[OEPocketsphinxController sharedInstance] resumeRecognition];
         
