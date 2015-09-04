@@ -39,6 +39,8 @@
 @property (nonatomic, strong) UIView *irisContentView;
 @property (nonatomic, strong) UIImageView *irisImageView;
 @property (nonatomic, strong) UIButton *stateButton;
+@property (nonatomic, strong) UIView *popUpView;
+@property (nonatomic, strong) UILabel *popUpLabel;
 
 @property (nonatomic, strong) OELanguageModelGenerator *languageModelGenerator;
 @property (nonatomic, strong) OEFliteController *fliteController;
@@ -265,7 +267,7 @@
     [_commandLabelsView addSubview:_arrowImageView];
     
     [_arrowImageView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_irisLabel withOffset:offset];
-    [_arrowImageView autoAlignAxis:ALAxisVertical toSameAxisOfView:_commandLabelsView];
+    [_arrowImageView autoAlignAxisToSuperviewAxis:ALAxisVertical];
     
     
     _firstCommandLabel = [[UILabel alloc] initForAutoLayout];
@@ -282,13 +284,13 @@
     [_commandLabelsView addSubview:_firstCommandLabel];
     
     [_firstCommandLabel autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_arrowImageView withOffset:offset];
-    [_firstCommandLabel autoAlignAxis:ALAxisVertical toSameAxisOfView:_commandLabelsView];
+    [_firstCommandLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
     
     
     _secondCommandLabel = [[UILabel alloc] initForAutoLayout];
     
-    NSAttributedString *secondCommandLabelAttributedText = [[NSAttributedString alloc]
-                                                            initWithString:@"Turn lights On/Off at # floor" attributes:
+    NSAttributedString *secondCommandLabelAttributedText = [[NSAttributedString alloc] initWithString:@"Turn lights On/Off at # floor"
+                                                                                           attributes:
                                                             @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
                                                                NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]
                                                                }];
@@ -299,7 +301,7 @@
     [_commandLabelsView addSubview:_secondCommandLabel];
     
     [_secondCommandLabel autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_firstCommandLabel withOffset:offset];
-    [_secondCommandLabel autoAlignAxis:ALAxisVertical toSameAxisOfView:_commandLabelsView];
+    [_secondCommandLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
     
     
     _irisContentView = [[UIView alloc] initForAutoLayout];
@@ -318,8 +320,25 @@
     [_irisContentView addSubview:_irisImageView];
     
     [_irisImageView autoSetDimensionsToSize:CGSizeMake(52, 98)];
-    [_irisImageView autoAlignAxis:ALAxisVertical toSameAxisOfView:_irisContentView];
-    [_irisImageView autoAlignAxis:ALAxisHorizontal toSameAxisOfView:_irisContentView];
+    [_irisImageView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    [_irisImageView autoAlignAxisToSuperviewAxis:ALAxisHorizontal];
+    
+    
+    _popUpView = [[UIView alloc] initForAutoLayout];
+    [_popUpView setBackgroundColor:[[UIColor alloc] initWithPatternImage:[UIImage imageNamed:@"popup"]]];
+    [self.view addSubview:_popUpView];
+    
+    [_popUpView autoSetDimensionsToSize:CGSizeMake(mainFrame.size.width, 78)];
+    [_popUpView autoAlignAxis:ALAxisVertical toSameAxisOfView:_irisContentView];
+    [_popUpView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.view];
+    
+    
+    _popUpLabel = [[UILabel alloc] initForAutoLayout];
+    [_popUpLabel sizeToFit];
+    [_popUpView addSubview:_popUpLabel];
+    
+    [_popUpLabel autoAlignAxisToSuperviewAxis:ALAxisHorizontal];
+    [_popUpLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
 }
 
 #pragma mark - String to MD5 Converter
