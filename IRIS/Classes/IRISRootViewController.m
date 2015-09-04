@@ -149,6 +149,7 @@
                                                                     }];
                 
                 [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
+                [_micImageView setImage:[UIImage imageNamed:@"mic-acik"]];
                 [_irisImageView setImage:[UIImage imageNamed:@"iris-on"]];
                 [_irisLabel setTextColor:[UIColor colorWithRed:5.0/255.0 green:5.0/255.0 blue:5.0/255.0 alpha:1.0]];
                 [_arrowImageView setImage:[UIImage imageNamed:@"arrow-siyah"]];
@@ -254,8 +255,8 @@
     [_stateButton sizeToFit];
     [self.view addSubview:_stateButton];
     
-    [_stateButton autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 5, 0) excludingEdge:ALEdgeTop];
-    [_stateButton autoSetDimension:ALDimensionHeight toSize:50.f];
+    [_stateButton autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
+    [_stateButton autoSetDimension:ALDimensionHeight toSize:78.f];
     
     
     _arrowImageView = [[UIImageView alloc] initForAutoLayout];
@@ -416,7 +417,7 @@
                                                             }];
         
         [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
-        
+        [_micImageView setImage:[UIImage imageNamed:@"mic-acik"]];
         [_irisImageView setImage:[UIImage imageNamed:@"iris-on"]];
         [_irisLabel setTextColor:[UIColor colorWithRed:5.0/255.0 green:5.0/255.0 blue:5.0/255.0 alpha:1.0]];
         [_arrowImageView setImage:[UIImage imageNamed:@"arrow-siyah"]];
@@ -432,6 +433,7 @@
                                                             }];
         
         [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
+        [_micImageView setImage:[UIImage imageNamed:@"mic"]];
         [_irisImageView setImage:[UIImage imageNamed:@"iris-off"]];
         [_irisLabel setTextColor:[UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]];
         [_arrowImageView setImage:[UIImage imageNamed:@"arrow-gri"]];
