@@ -26,6 +26,10 @@
 #define kAcousticModel @"AcousticModelEnglish"
 
 
+static NSString * const IRISPusherAppIdentifier = @"<YOUR PUSHER APP ID>";
+static NSString * const IRISPusherAppAuthKey = @"<YOUR PUSHER AUTH KEY>";
+
+
 @interface IRISRootViewController () <OEEventsObserverDelegate>
 
 @property (nonatomic, strong) UIView *headerView;
@@ -70,47 +74,28 @@
     
     _fliteController = [[OEFliteController alloc] init];
     _slt = [[Slt alloc] init];
+    
     [_fliteController setDuration_stretch:1.3];
     
     _openEarsEventsObserver = [[OEEventsObserver alloc] init];
+    
     [_openEarsEventsObserver setDelegate:self];
     
     _languageModelGenerator = [[OELanguageModelGenerator alloc] init];
-
-    /*
-     @{
-     ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
-     @{ OneOfTheseWillBeSaidOnce : @[
-     @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
-     @{ ThisWillBeSaidOnce : @[
-     @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHTS ON AT", @"TURN LIGHTS OFF AT"] },
-     @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
-     } ]
-     } ]
-     };
-     */
     
-    
-    /*
-     app_id`: `135431`
-     `key`: `138289ba194ec1862b00`
-     `channel`: `homekit_channel`
-     `secret`: `dd5ffaacb91264be3264`
-     
-     all_off
-     all_on
-     
-     floor1_on
-     floor1_off
-     */
-    
-    _recognizedCommands =   @{
-                              ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
+    _recognizedCommands =   @{ThisWillBeSaidOnce : @[ @{ ThisWillBeSaidOnce : @[@"HEY IRIS"] },
                                                       @{ OneOfTheseWillBeSaidOnce : @[
-                                                                 @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS", @"TURN OFF ALL LIGHTS"] },
+                                                                 @{ OneOfTheseWillBeSaidOnce : @[@"TURN ON ALL LIGHTS",
+                                                                                                 @"TURN OFF ALL LIGHTS"] },
+
                                                                  @{ ThisWillBeSaidOnce : @[
-                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHTS ON AT", @"TURN LIGHTS OFF AT"] },
-                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR", @"SECOND FLOOR", @"THIRD FLOOR", @"FOURTH FLOOR"] } ]
+                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"TURN LIGHTS ON AT",
+                                                                                                            @"TURN LIGHTS OFF AT"] },
+
+                                                                            @{ OneOfTheseWillBeSaidOnce : @[@"FIRST FLOOR",
+                                                                                                            @"SECOND FLOOR",
+                                                                                                            @"THIRD FLOOR",
+                                                                                                            @"FOURTH FLOOR"] } ]
                                                                     } ]
                                                          } ]
                               };
@@ -134,11 +119,16 @@
                                                                                                   pathToModel:kAcousticModel]
                                                                              languageModelIsJSGF:YES];
                 
+                NSDictionary *stateAttributes = @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                                   NSForegroundColorAttributeName: [UIColor colorWithRed:54.0/255.0
+                                                                                                   green:213.0/255.0
+                                                                                                    blue:180.0/255.0
+                                                                                                   alpha:1.0]
+                                                   };
+                
                 NSAttributedString *stateButtonAttributedText = [[NSAttributedString alloc]
-                                                                 initWithString:@"Yeah I'm Listening" attributes:
-                                                                 @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                                    NSForegroundColorAttributeName: [UIColor colorWithRed:54.0/255.0 green:213.0/255.0 blue:180.0/255.0 alpha:1.0]
-                                                                    }];
+                                                                 initWithString:@"Yeah I'm Listening"
+                                                                 attributes:stateAttributes];
                 
                 [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
                 [_micImageView setImage:[UIImage imageNamed:@"mic-acik"]];
@@ -152,7 +142,12 @@
                 NSLog(@"Error: %@", [error localizedDescription]);
             }
         } else {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"IMPORTANT!" message:@"Please open the microphone permisson in the settings." delegate:nil cancelButtonTitle:@"OKAY" otherButtonTitles:nil, nil];
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"IMPORTANT!"
+                                                                message:@"Please turn on microphone permissons in Settings."
+                                                               delegate:nil
+                                                      cancelButtonTitle:@"OK"
+                                                      otherButtonTitles:nil, nil];
+            
             [alertView show];
         }
     }];
@@ -166,6 +161,7 @@
     CGRect mainFrame = [[UIScreen mainScreen] bounds];
     
     _headerView = [[UIView alloc] initForAutoLayout];
+    
     [self.view addSubview:_headerView];
 
     [_headerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
@@ -173,6 +169,7 @@
     
     
     _micImageView = [[UIImageView alloc] initForAutoLayout];
+    
     [_micImageView setImage:[UIImage imageNamed:@"mic"]];
     [_micImageView setContentMode:UIViewContentModeScaleAspectFit];
     [_headerView addSubview:_micImageView];
@@ -182,15 +179,21 @@
     
     _headerLabel = [[UILabel alloc] initForAutoLayout];
     
+    NSDictionary *headerAttributes = @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:16.f],
+                                        NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0
+                                                                                        green:185.0/255.0
+                                                                                         blue:185.0/255.0
+                                                                                        alpha:1.0]
+                                        };
+    
     NSAttributedString *headerLabelAttributedText = [[NSAttributedString alloc]
-                                                     initWithString:@"List of Comments" attributes:
-                                                     @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:16.f],
-                                                        NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]
-                                                        }];
+                                                     initWithString:@"List of Comments"
+                                                     attributes:headerAttributes];
     
     [_headerLabel setAttributedText:headerLabelAttributedText];
     [_headerLabel setTextAlignment:NSTextAlignmentCenter];
     [_headerLabel sizeToFit];
+    
     [_headerView addSubview:_headerLabel];
     
     [_headerLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(37.5, 30, 0, 30) excludingEdge:ALEdgeBottom];
@@ -198,14 +201,17 @@
     
     
     UIImageView *lineImageView = [[UIImageView alloc] initForAutoLayout];
+    
     [lineImageView setImage:[UIImage imageNamed:@"line"]];
     [lineImageView setContentMode:UIViewContentModeScaleAspectFill];
+    
     [_headerView addSubview:lineImageView];
     
     [lineImageView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 10, 0, 10) excludingEdge:ALEdgeTop];
     
     
     _commandLabelsView = [[UIView alloc] initForAutoLayout];
+    
     [self.view addSubview:_commandLabelsView];
     
     [_commandLabelsView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_headerView withOffset:20.f relation:NSLayoutRelationEqual];
@@ -216,18 +222,24 @@
     
     CGFloat offset = ((mainFrame.size.height * 0.85) / 2) / 7;
     
+    NSDictionary *commandAttributes = @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                         NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0
+                                                                                         green:185.0/255.0
+                                                                                          blue:185.0/255.0
+                                                                                         alpha:1.0]
+                                         };
+    
     
     _irisLabel = [[UILabel alloc] initForAutoLayout];
     
     NSAttributedString *irisLabelAttributedText = [[NSAttributedString alloc]
-                                                   initWithString:@"Hey Iris" attributes:
-                                                   @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                      NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]
-                                                      }];
+                                                   initWithString:@"Hey Iris"
+                                                   attributes:commandAttributes];
     
     [_irisLabel setAttributedText:irisLabelAttributedText];
     [_irisLabel setTextAlignment:NSTextAlignmentCenter];
     [_irisLabel sizeToFit];
+    
     [_commandLabelsView addSubview:_irisLabel];
     
     [_irisLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(offset, 0, 0, 0) excludingEdge:ALEdgeBottom];
@@ -235,16 +247,22 @@
     
     _stateButton = [[UIButton alloc] initForAutoLayout];
     
+    NSDictionary *stateAttributes = @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                       NSForegroundColorAttributeName: [UIColor colorWithRed:208.0/255.0
+                                                                                       green:34.0/255.0
+                                                                                        blue:57.0/255.0
+                                                                                       alpha:1.0]
+                                       };
+    
     NSAttributedString *stateButtonAttributedText = [[NSAttributedString alloc]
-                                                     initWithString:@"Listen" attributes:
-                                                     @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                        NSForegroundColorAttributeName: [UIColor colorWithRed:208.0/255.0 green:34.0/255.0 blue:57.0/255.0 alpha:1.0]
-                                                        }];
+                                                     initWithString:@"Listen"
+                                                     attributes:stateAttributes];
     
     [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
     [_stateButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
     [_stateButton addTarget:self action:@selector(didTapListenButton:) forControlEvents:UIControlEventTouchUpInside];
     [_stateButton sizeToFit];
+    
     [self.view addSubview:_stateButton];
     
     [_stateButton autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
@@ -252,8 +270,10 @@
     
     
     _arrowImageView = [[UIImageView alloc] initForAutoLayout];
+
     [_arrowImageView setImage:[UIImage imageNamed:@"arrow-gri"]];
     [_arrowImageView setContentMode:UIViewContentModeScaleAspectFit];
+    
     [_commandLabelsView addSubview:_arrowImageView];
     
     [_arrowImageView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_irisLabel withOffset:offset];
@@ -263,14 +283,13 @@
     _firstCommandLabel = [[UILabel alloc] initForAutoLayout];
     
     NSAttributedString *firstCommandLabelAttributedText = [[NSAttributedString alloc]
-                                                           initWithString:@"Turn On/Off all lights" attributes:
-                                                           @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                              NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]
-                                                              }];
+                                                           initWithString:@"Turn On/Off all lights"
+                                                           attributes:commandAttributes];
     
     [_firstCommandLabel setAttributedText:firstCommandLabelAttributedText];
     [_firstCommandLabel setTextAlignment:NSTextAlignmentCenter];
     [_firstCommandLabel sizeToFit];
+    
     [_commandLabelsView addSubview:_firstCommandLabel];
     
     [_firstCommandLabel autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_arrowImageView withOffset:offset];
@@ -279,15 +298,14 @@
     
     _secondCommandLabel = [[UILabel alloc] initForAutoLayout];
     
-    NSAttributedString *secondCommandLabelAttributedText = [[NSAttributedString alloc] initWithString:@"Turn lights On/Off at # floor"
-                                                                                           attributes:
-                                                            @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                               NSForegroundColorAttributeName: [UIColor colorWithRed:185.0/255.0 green:185.0/255.0 blue:185.0/255.0 alpha:1.0]
-                                                               }];
+    NSAttributedString *secondCommandLabelAttributedText = [[NSAttributedString alloc]
+                                                            initWithString:@"Turn lights On/Off at # floor"
+                                                            attributes:commandAttributes];
     
     [_secondCommandLabel setAttributedText:secondCommandLabelAttributedText];
     [_secondCommandLabel setTextAlignment:NSTextAlignmentCenter];
     [_secondCommandLabel sizeToFit];
+    
     [_commandLabelsView addSubview:_secondCommandLabel];
     
     [_secondCommandLabel autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:_firstCommandLabel withOffset:offset];
@@ -295,7 +313,9 @@
     
     
     _irisContentView = [[UIView alloc] initForAutoLayout];
+    
     [_irisContentView setBackgroundColor:[UIColor clearColor]];
+    
     [self.view addSubview:_irisContentView];
     
     [_irisContentView autoPinEdge:ALEdgeLeft toEdge:ALEdgeLeft ofView:self.view];
@@ -305,8 +325,10 @@
     
     
     _irisImageView = [[UIImageView alloc] initForAutoLayout];
+    
     [_irisImageView setImage:[UIImage imageNamed:@"iris-off"]];
     [_irisImageView setContentMode:UIViewContentModeScaleAspectFit];
+    
     [_irisContentView addSubview:_irisImageView];
     
     [_irisImageView autoSetDimensionsToSize:CGSizeMake(52, 98)];
@@ -315,16 +337,21 @@
     
     
     _popUpView = [[UIView alloc] initForAutoLayout];
+    
     [_popUpView setBackgroundColor:[[UIColor alloc] initWithPatternImage:[UIImage imageNamed:@"popup"]]];
+
     [self.view addSubview:_popUpView];
     
     [_popUpView autoSetDimensionsToSize:CGSizeMake(mainFrame.size.width, 78)];
     [_popUpView autoAlignAxis:ALAxisVertical toSameAxisOfView:_irisContentView];
+    
     _popUpConstraint = [_popUpView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.view];
     
     [self.view bringSubviewToFront:_popUpView];
     
+    
     _popUpLabel = [[UILabel alloc] initForAutoLayout];
+    
     [_popUpLabel sizeToFit];
     [_popUpView addSubview:_popUpLabel];
     
@@ -335,26 +362,36 @@
 #pragma mark - Popup Information
 
 - (void)popUpwithInformation:(NSString *)information {
-    NSAttributedString *informationAttributedString = [[NSAttributedString alloc] initWithString:information
-                                                                                      attributes:@{
-                                                                                                   NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                                                                   NSForegroundColorAttributeName: [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0]
-                                                                                                   }];
+    NSDictionary *infoAttributes = @{
+                                     NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                     NSForegroundColorAttributeName: [UIColor blackColor]
+                                     };
+    
+    NSAttributedString *informationAttributedString = [[NSAttributedString alloc]
+                                                       initWithString:information
+                                                       attributes:infoAttributes];
     
     [_popUpLabel setAttributedText:informationAttributedString];
     [_popUpLabel sizeToFit];
     [_popUpView layoutIfNeeded];
-    
-    [UIView animateWithDuration:0.5 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        _popUpConstraint.constant = -78.f;
-        [_popUpView layoutIfNeeded];
-    } completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.5 delay:1.5 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            _popUpConstraint.constant = 0.f;
-            [_popUpView layoutIfNeeded];
-        } completion:nil];
-    }];
-    
+
+    _popUpConstraint.constant = -78.f;
+
+    [UIView animateWithDuration:0.5
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^{
+                         [_popUpView layoutIfNeeded];
+                     } completion:^(BOOL finished) {
+                         _popUpConstraint.constant = 0.f;
+                         
+                         [UIView animateWithDuration:0.5
+                                               delay:1.5
+                                             options:UIViewAnimationOptionCurveEaseInOut
+                                          animations:^{
+                                              [_popUpView layoutIfNeeded];
+                                          } completion:nil];
+                     }];
 }
 
 #pragma mark - String to MD5 Converter
@@ -376,13 +413,11 @@
 #pragma mark - Request Method
 
 - (void)sendRequest: (NSString *)event {
-    NSString *app_id = [NSString stringWithFormat:@"%d", 135431];
-    
     NSString *timeInterval = [NSString stringWithFormat:@"%.0f", [[NSDate date] timeIntervalSince1970]];
     
     NSDictionary *parameters = @{
                                  @"name": event,
-                                 @"data": @"{\"name\": \"John\",\"message\": \"Hello\"}",
+                                 @"data": @"{}",
                                  @"channel": @"homekit_channel"
                                  };
     
@@ -396,25 +431,35 @@
     NSString *parametersMD5 = [self md5:parametersJSON];
     
     NSDictionary *authParameters = @{
-                                     @"auth_key": @"138289ba194ec1862b00",
+                                     @"auth_key": IRISPusherAppAuthKey,
                                      @"auth_timestamp": timeInterval,
                                      @"auth_version": @"1.0",
                                      @"body_md5": parametersMD5
                                      };
     
-    NSString *HMAC_SHA_256 = [NSString stringWithFormat:@"POST\n/apps/%@/events\nauth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@", app_id, authParameters[@"auth_key"], authParameters[@"auth_timestamp"], parametersMD5];
+    NSString *HMAC_SHA_256 = [NSString stringWithFormat:@"POST\n/apps/%@/events\nauth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@",
+                              IRISPusherAppIdentifier,
+                              authParameters[@"auth_key"],
+                              authParameters[@"auth_timestamp"],
+                              parametersMD5];
     
     NSString *secret = @"dd5ffaacb91264be3264";
-    
     NSString *result = [NSString hmac:HMAC_SHA_256 withKey:secret];
-    
-    NSString *postURL = [@"http://api.pusherapp.com" stringByAppendingString:[NSString stringWithFormat:@"/apps/%@/events?auth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@&auth_signature=%@", app_id, authParameters[@"auth_key"], authParameters[@"auth_timestamp"], parametersMD5, result]];
-    
+    NSString *postURL = [@"http://api.pusherapp.com" stringByAppendingString:
+                         [NSString stringWithFormat:@"/apps/%@/events?auth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@&auth_signature=%@",
+                          IRISPusherAppIdentifier,
+                          authParameters[@"auth_key"],
+                          authParameters[@"auth_timestamp"],
+                          parametersMD5,
+                          result]];
     
     _requestOperationManager.requestSerializer = [AFJSONRequestSerializer serializer];
-    [_requestOperationManager.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
+    [_requestOperationManager.requestSerializer setValue:@"application/json"
+                                      forHTTPHeaderField:@"Content-Type"];
     
     _requestOperationManager.responseSerializer = [AFJSONResponseSerializer serializer];
+    
     [_requestOperationManager.responseSerializer setAcceptableContentTypes:[NSSet setWithObject:@"text/html"]];
     
     [_requestOperationManager POST:postURL parameters:parameters success:^(AFHTTPRequestOperation *operation, id respondObject) {
@@ -433,7 +478,6 @@
                 [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are off", [_floorNumberString capitalizedString]]];
             }
         }
-        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
         [self popUpwithInformation:@"Network Error"];
@@ -443,14 +487,19 @@
 #pragma mark - Button Actions
 
 - (void)didTapListenButton:(UIButton *)button {
+    NSDictionary *stateAttributes = @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
+                                       NSForegroundColorAttributeName: [UIColor colorWithRed:54.0/255.0
+                                                                                       green:213.0/255.0
+                                                                                        blue:180.0/255.0
+                                                                                       alpha:1.0]
+                                       };
+    
     if ([_stateButton.titleLabel.text isEqualToString:@"Listen"]) {
         [[OEPocketsphinxController sharedInstance] resumeRecognition];
         
         NSAttributedString *stateButtonAttributedText = [[NSAttributedString alloc]
-                                                         initWithString:@"Yeah I'm Listening" attributes:
-                                                         @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                            NSForegroundColorAttributeName: [UIColor colorWithRed:54.0/255.0 green:213.0/255.0 blue:180.0/255.0 alpha:1.0]
-                                                            }];
+                                                         initWithString:@"Yeah I'm Listening"
+                                                         attributes:stateAttributes];
         
         [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
         [_micImageView setImage:[UIImage imageNamed:@"mic-acik"]];
@@ -463,10 +512,8 @@
         [[OEPocketsphinxController sharedInstance] suspendRecognition];
         
         NSAttributedString *stateButtonAttributedText = [[NSAttributedString alloc]
-                                                         initWithString:@"Listen" attributes:
-                                                         @{ NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:18.f],
-                                                            NSForegroundColorAttributeName: [UIColor colorWithRed:208.0/255.0 green:34.0/255.0 blue:57.0/255.0 alpha:1.0]
-                                                            }];
+                                                         initWithString:@"Listen"
+                                                         attributes:stateAttributes];
         
         [_stateButton setAttributedTitle:stateButtonAttributedText forState:UIControlStateNormal];
         [_micImageView setImage:[UIImage imageNamed:@"mic"]];
@@ -480,11 +527,13 @@
 
 #pragma mark - OEEventsObserver Delegate
 
-- (void)pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
+- (void)pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis
+                        recognitionScore:(NSString *)recognitionScore
+                             utteranceID:(NSString *)utteranceID {
+
     NSLog(@"The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID);
     
     NSArray *commandWords = [hypothesis componentsSeparatedByString: @" "];
-    
     NSString *event = nil;
     
     switch (commandWords.count) {
@@ -502,8 +551,8 @@
             _on_off = [_on_off lowercaseString];
             
             _floorNumberString = commandWords[commandWords.count - 2];
-            NSInteger floorNumber = 0;
             
+            NSInteger floorNumber = 0;
             
             if ([_floorNumberString isEqualToString:@"FIRST"]) {
                 floorNumber = 1;
@@ -520,8 +569,8 @@
             } else if ([_floorNumberString isEqualToString:@"FOURTH"]) {
                 floorNumber = 4;
                 event = [NSString stringWithFormat:@"floor%ld_%@",(long)floorNumber,_on_off];
-                
             }
+            
             break;
         default:
             break;
