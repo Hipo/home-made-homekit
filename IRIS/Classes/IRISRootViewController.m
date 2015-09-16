@@ -28,6 +28,7 @@
 
 static NSString * const IRISPusherAppIdentifier = @"<YOUR PUSHER APP ID>";
 static NSString * const IRISPusherAppAuthKey = @"<YOUR PUSHER AUTH KEY>";
+static NSString * const IRISPusherAppAuthSecret = @"<YOUR PUSHER AUTH Secret>";
 
 
 @interface IRISRootViewController () <OEEventsObserverDelegate>
@@ -443,15 +444,15 @@ static NSString * const IRISPusherAppAuthKey = @"<YOUR PUSHER AUTH KEY>";
                               authParameters[@"auth_timestamp"],
                               parametersMD5];
     
-    NSString *secret = @"dd5ffaacb91264be3264";
-    NSString *result = [NSString hmac:HMAC_SHA_256 withKey:secret];
-    NSString *postURL = [@"http://api.pusherapp.com" stringByAppendingString:
-                         [NSString stringWithFormat:@"/apps/%@/events?auth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@&auth_signature=%@",
-                          IRISPusherAppIdentifier,
-                          authParameters[@"auth_key"],
-                          authParameters[@"auth_timestamp"],
-                          parametersMD5,
-                          result]];
+    NSString *result = [NSString hmac:HMAC_SHA_256 withKey:IRISPusherAppAuthSecret];
+    NSString *postURL = [NSString stringWithFormat:
+                         @"http://api.pusherapp.com/apps/%@/events?"
+                         "auth_key=%@&auth_timestamp=%@&auth_version=1.0&body_md5=%@&auth_signature=%@",
+                         IRISPusherAppIdentifier,
+                         authParameters[@"auth_key"],
+                         authParameters[@"auth_timestamp"],
+                         parametersMD5,
+                         result];
     
     _requestOperationManager.requestSerializer = [AFJSONRequestSerializer serializer];
 
@@ -462,26 +463,31 @@ static NSString * const IRISPusherAppAuthKey = @"<YOUR PUSHER AUTH KEY>";
     
     [_requestOperationManager.responseSerializer setAcceptableContentTypes:[NSSet setWithObject:@"text/html"]];
     
-    [_requestOperationManager POST:postURL parameters:parameters success:^(AFHTTPRequestOperation *operation, id respondObject) {
-        NSLog(@"Success!");
-        if ([_on_off isEqualToString:@"on"]) {
-            if ([_floorNumberString isEqualToString:@"all"]) {
-                [self popUpwithInformation:@"All lights are on"];
-            } else {
-                [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are on", [_floorNumberString capitalizedString]]];
-            }
-        } else {
-            if ([_floorNumberString isEqualToString:@"all"]) {
-                [self popUpwithInformation:@"All lights are off"];
+    [_requestOperationManager POST:postURL
+                        parameters:parameters
+                           success:^(AFHTTPRequestOperation *operation, id respondObject) {
 
-            } else {
-                [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are off", [_floorNumberString capitalizedString]]];
-            }
-        }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error: %@", error);
-        [self popUpwithInformation:@"Network Error"];
-    }];
+                               if ([_on_off isEqualToString:@"on"]) {
+                                   if ([_floorNumberString isEqualToString:@"all"]) {
+                                       [self popUpwithInformation:@"All lights are on"];
+                                   } else {
+                                       [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are on",
+                                                                   [_floorNumberString capitalizedString]]];
+                                   }
+                               } else {
+                                   if ([_floorNumberString isEqualToString:@"all"]) {
+                                       [self popUpwithInformation:@"All lights are off"];
+                                       
+                                   } else {
+                                       [self popUpwithInformation:[NSString stringWithFormat:@"%@ floor lights are off",
+                                                                   [_floorNumberString capitalizedString]]];
+                                   }
+                               }
+                           } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                               NSLog(@"Error: %@", error);
+
+                               [self popUpwithInformation:@"Network Error"];
+                           }];
 }
 
 #pragma mark - Button Actions
